@@ -496,8 +496,8 @@ bool BimanualControl::set_singularity_avoidance_params(const double &scalar, con
 	{
 		std::cerr << "[ERROR] [BIMANUAL CONTROL] set_singularity_limit(): "
 		          << "Input arguments must be positive. "
-		          << "Scalar argument was " << to_string(scalar) << ", and "
-		          << "limit argument was " << to_string(limit) << ".\n";
+		          << "Scalar argument was " << std::to_string(scalar) << ", and "
+		          << "limit argument was " << std::to_string(limit) << ".\n";
 		          
 		return false;
 	}
