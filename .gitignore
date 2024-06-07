@@ -1,0 +1,10 @@
+ControlInterface_index.txt
+HumanState_index.txt
+build/
+include/ControlInterface.h
+include/QPSolver.h
+include/WalkingControllers/
+src/ControlInterface.cpp
+src/HumanState.cpp
+src/Quaternion.cpp
+src/Vector3.cpp
