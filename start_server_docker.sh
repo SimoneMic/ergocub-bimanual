@@ -6,7 +6,7 @@ CURRENT_DIR=$(pwd)
 # Options
 CONFIG="$CURRENT_DIR/config/ergocub_gazebo_sim.ini"
 PORT="/ergocubSim"
-URDF="$CURRENT_DIR/../robotology-superbuild/build/install/share/ergoCub/robots/ergoCubGazeboV1/model.urdf"
+URDF="$CURRENT_DIR/../robotology-superbuild/src/ergocub-software/urdf/ergoCub/robots/ergoCubGazeboV1/model.urdf"
 WORLD="$CURRENT_DIR/gazebo/worlds/ergocub_nav_test.sdf"
 
 # Create first window & panel
@@ -46,7 +46,7 @@ tmux send-keys    -t $SESSION "export YARP_CLOCK=/clock && gazebo -s libgazebo_y
 tmux split-window -v
 tmux rename-window -t  3 'Ecubrobotinterface'                                                       
 tmux select-pane -t 3
-tmux send-keys -t $SESSION "export YARP_CLOCK=/clock && YARP_CLOCK=/clock yarprobotinterface --from ecub_yarprobotinterface.ini" Enter
+tmux send-keys -t $SESSION "export YARP_CLOCK=/clock && YARP_CLOCK=/clock yarprobotinterface --config /home/ecub_docker/robotology-superbuild/src/ergocub-software/urdf/ergoCub/conf/launch_wholebodydynamics_ecub.xml" Enter
 tmux attach-session -t $SESSION:3                                                        
 
 # Select Pane 0, launch the yarp server
