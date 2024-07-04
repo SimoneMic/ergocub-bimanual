@@ -126,7 +126,6 @@ int main(int argc, char *argv[])
 					if (ss.peek() == ',')
 						ss.ignore();
 				}
-				std::cout << "\n Obtained commands for custom object pose()"<<object_pose[0]<<object_pose[1]<<object_pose[2]<<object_pose[3];
 				if(object_pose.size() <= 2 && object_pose.size() >= 4)
 					output.addString("Cosa");
 				else

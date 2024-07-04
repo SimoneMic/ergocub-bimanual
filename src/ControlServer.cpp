@@ -144,7 +144,6 @@ class ControlServer : public ControlInterface
 			std::vector<Eigen::Isometry3d> objectWaypoints;
 			std::vector<double> waypointTimes;
 			Type type;                                                                  // Relative or absolute motion
-			std::cout<<"\nEntering Grasp Action";
 			if(not this->robot->is_grasping())
 			{
 				std::cerr << "[ERROR] [CONTROL SERVER] perform_grasp_action(): "
@@ -152,7 +151,6 @@ class ControlServer : public ControlInterface
 				
 				return false;
 			}
-			std::cout<<"Out here testing custom actions";
 			auto temp = graspActionMap->find(actionName);                               // Temporary placeholder for the iterator
 			auto temp2 = *graspActionMap->find("reset");									//Temporary holde rof the reset pose values.
 
@@ -185,7 +183,6 @@ class ControlServer : public ControlInterface
 
 			if(custom_continuous_action)
 			{
-				std::cout<<"Running cutom action";
 				std::string reset="reset";
 				temp = graspActionMap->find("custom");
 				temp2.second.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
