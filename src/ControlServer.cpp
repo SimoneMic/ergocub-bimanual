@@ -152,11 +152,11 @@ class ControlServer : public ControlInterface
 				return false;
 			}
 			auto temp = graspActionMap->find(actionName);                               // Temporary placeholder for the iterator
-			auto temp2 = *graspActionMap->find("reset");									//Temporary holde rof the reset pose values.
+			auto temp2 = graspActionMap->find("reset");									//Temporary holde rof the reset pose values.
 
 			bool custom_continuous_action = false;
 			std::vector<double> object_pose;
-
+                        CartesianMotion reset_custom;
 			if(temp == graspActionMap->end())
 			{
 				std::stringstream ss(actionName);
@@ -185,16 +185,19 @@ class ControlServer : public ControlInterface
 			{
 				std::string reset="reset";
 				temp = graspActionMap->find("custom");
-				temp2.second.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
-				temp2.second.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
-				temp ->second.waypoints = temp2.second.waypoints;
-				temp ->second.times = temp2.second.times;
-				temp ->second.type = temp2.second.type;
-
+				CartesianMotion modify_reset = temp2->second;
+				modify_reset.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
+				modify_reset.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
+				reset_custom.waypoints = temp ->second.waypoints;
+				temp ->second.waypoints = modify_reset.waypoints;
+				
 			}
 			objectWaypoints = temp->second.waypoints;
 			waypointTimes   = temp->second.times;
 			type            = temp->second.type;
+			
+			if(custom_continuous_action)
+			        temp->second.waypoints = reset_custom.waypoints;
 			
 			if(type == absolute)
 			{
