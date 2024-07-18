@@ -144,7 +144,6 @@ class ControlServer : public ControlInterface
 			std::vector<Eigen::Isometry3d> objectWaypoints;
 			std::vector<double> waypointTimes;
 			Type type;                                                                  // Relative or absolute motion
-			
 			if(not this->robot->is_grasping())
 			{
 				std::cerr << "[ERROR] [CONTROL SERVER] perform_grasp_action(): "
@@ -152,18 +151,47 @@ class ControlServer : public ControlInterface
 				
 				return false;
 			}
-			
 			auto temp = graspActionMap->find(actionName);                               // Temporary placeholder for the iterator
-			
+			auto temp2 = *graspActionMap->find("reset");									//Temporary holde rof the reset pose values.
+
+			bool custom_continuous_action = false;
+			std::vector<double> object_pose;
+
 			if(temp == graspActionMap->end())
 			{
-				std::cerr << "[ERROR] [CONTROL SERVER} perform_grasp_action(): "
-				          << "Could not find the action named '"
-				          << actionName << "' in the list.\n";
+				std::stringstream ss(actionName);
+				double input_dbl;
+				while(ss>>input_dbl)
+				{
+					object_pose.push_back(input_dbl);
+					if (ss.peek() == ',')
+        				ss.ignore();
+
+				}
+				if(object_pose.size()<=2 && object_pose.size()>=4)
+				{
+					std::cerr << "[ERROR] [CONTROL SERVER} perform_grasp_action(): "
+				          	<< "Could not find the action named '"
+				          	<< actionName << "' in the list, or any custom continuous action.\n ";
 				          
 				return false;
+				}
+				else 
+					custom_continuous_action=true;
 			}
 
+
+			if(custom_continuous_action)
+			{
+				std::string reset="reset";
+				temp = graspActionMap->find("custom");
+				temp2.second.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
+				temp2.second.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
+				temp ->second.waypoints = temp2.second.waypoints;
+				temp ->second.times = temp2.second.times;
+				temp ->second.type = temp2.second.type;
+
+			}
 			objectWaypoints = temp->second.waypoints;
 			waypointTimes   = temp->second.times;
 			type            = temp->second.type;
@@ -366,7 +394,7 @@ class ControlServer : public ControlInterface
 };                                                                                                  // Semicolon needed after class declaration
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
- //                                             MAIN                                               //
+ //                                            CartesianMotion MAIN                                               //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
