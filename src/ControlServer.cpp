@@ -168,7 +168,7 @@ class ControlServer : public ControlInterface
         				ss.ignore();
 
 				}
-				if(object_pose.size()<=2 && object_pose.size()>=4)
+				if(object_pose.size()<=2 || object_pose.size()>5)
 				{
 					std::cerr << "[ERROR] [CONTROL SERVER} perform_grasp_action(): "
 				          	<< "Could not find the action named '"
@@ -185,19 +185,28 @@ class ControlServer : public ControlInterface
 			{
 				std::string reset="reset";
 				temp = graspActionMap->find("custom");
-				CartesianMotion modify_reset = temp2->second;
+				CartesianMotion modify_reset = temp->second;
+				reset_custom = temp->second;
 				modify_reset.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
 				modify_reset.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
-				reset_custom.waypoints = temp ->second.waypoints;
-				temp ->second.waypoints = modify_reset.waypoints;
 				
+
+				temp->second.waypoints.clear();
+				temp->second.times.clear();
+				temp->second.waypoints.push_back(modify_reset.waypoints[0]);
+				temp->second.times.push_back( object_pose[4]);
+							
 			}
 			objectWaypoints = temp->second.waypoints;
 			waypointTimes   = temp->second.times;
 			type            = temp->second.type;
 			
 			if(custom_continuous_action)
-			        temp->second.waypoints = reset_custom.waypoints;
+			{
+			        temp->second.waypoints.clear();
+			        temp->second.times.clear();
+			        temp->second = reset_custom;
+			}
 			
 			if(type == absolute)
 			{
