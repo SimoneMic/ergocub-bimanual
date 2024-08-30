@@ -210,6 +210,11 @@ class ControlServer : public ControlInterface
 			
 			if(type == absolute)
 			{
+				if(actionName == "reset")
+				{
+					objectWaypoints.clear();
+					objectWaypoints.push_back(this->robot->getInitialGraspObjectPose());
+				}
 				return this->robot->move_object(objectWaypoints,waypointTimes);
 			}
 			else // type == relative

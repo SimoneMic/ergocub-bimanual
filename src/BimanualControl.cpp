@@ -880,6 +880,8 @@ bool BimanualControl::activate_grasp()
 		this->leftHand2Object = Eigen::Isometry3d(Eigen::Translation3d(0,-graspWidth/2,0)); // Assume object is rigidly attached to left hand
 		
 		this->objectPose = this->leftPose*this->leftHand2Object;                            // Update the object pose
+
+		this->initGraspObjectPose = this->objectPose;										//Pose to reset to to avoid drift.
 		 
 		return move_object(this->objectPose,1.0);                                           // Hold object in current pose
 	}

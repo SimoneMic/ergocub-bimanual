@@ -187,6 +187,14 @@ class BimanualControl : public QPSolver<double>,
 		  */
 		 void motor_control(const bool &active);
 
+		/**
+		 * @brief Get the Initial Grasp Object Pose To Reduce Drift
+		 * 
+		 * @return Initial pose of the grasped object 
+		 * 
+		 */
+		inline Eigen::Isometry3d getInitialGraspObjectPose(){return initGraspObjectPose;}
+
 	private:
 		bool isGrasping = false;                                                            ///< Used to check which control method to use
 		
@@ -272,6 +280,8 @@ class BimanualControl : public QPSolver<double>,
 		Eigen::Isometry3d objectPose;                                                       ///< Pose of the object
 		
 		Eigen::Isometry3d leftHand2Object;                                                  ///< Pose of the object relative to left hand
+
+		Eigen::Isometry3d initGraspObjectPose;												///< Initial pose to move the object to when reset command has be called.
 		
 		/**
 		 * Specifies joint control mode, or Cartesian control mode.
