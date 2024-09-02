@@ -185,7 +185,7 @@ class ControlServer : public ControlInterface
 			{
 				std::string reset="reset";
 				temp = graspActionMap->find("custom");
-				CartesianMotion modify_reset = temp->second;
+				CartesianMotion modify_reset = temp2->second;
 				reset_custom = temp->second;
 				modify_reset.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
 				modify_reset.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
