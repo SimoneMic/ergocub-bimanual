@@ -875,9 +875,9 @@ bool BimanualControl::activate_grasp()
 	{		
 		this->isGrasping = true;                                                            // Set grasp constraint
 		
-		double graspWidth = (this->leftPose.translation() - this->rightPose.translation()).norm(); // Distance between the hands
+		Eigen::VectorXd graspWidth = (this->leftPose.translation() - this->rightPose.translation()); // Distance between the hands
 		
-		this->leftHand2Object = Eigen::Isometry3d(Eigen::Translation3d(0,-graspWidth/2,0)); // Assume object is rigidly attached to left hand
+		this->leftHand2Object = Eigen::Isometry3d(Eigen::Translation3d(graspWidth(0),-graspWidth(1)/2,graspWidth(2))); // Assume object is rigidly attached to left hand
 		
 		this->objectPose = this->leftPose*this->leftHand2Object;                            // Update the object pose
 
