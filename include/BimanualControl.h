@@ -282,6 +282,9 @@ class BimanualControl : public QPSolver<double>,
 		Eigen::Isometry3d leftHand2Object;                                                  ///< Pose of the object relative to left hand
 
 		Eigen::Isometry3d initGraspObjectPose;												///< Initial pose to move the object to when reset command has be called.
+
+		Eigen::Isometry3d initObjectRelPose;												///< Initial pose of object relative to the left had.
+
 		
 		/**
 		 * Specifies joint control mode, or Cartesian control mode.

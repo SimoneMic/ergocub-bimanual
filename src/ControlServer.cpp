@@ -152,7 +152,7 @@ class ControlServer : public ControlInterface
 				return false;
 			}
 			auto temp = graspActionMap->find(actionName);                               // Temporary placeholder for the iterator
-			auto temp2 = graspActionMap->find("reset");									//Temporary holde rof the reset pose values.
+			auto temp2 = graspActionMap->find("custom");									//Temporary holde rof the reset pose values.
 
 			bool custom_continuous_action = false;
 			std::vector<double> object_pose;
@@ -193,7 +193,7 @@ class ControlServer : public ControlInterface
 
 				temp->second.waypoints.clear();
 				temp->second.times.clear();
-				temp->second.waypoints.push_back(modify_reset.waypoints[0]);
+				temp->second.waypoints.push_back(this->robot->getInitialGraspObjectPose()*modify_reset.waypoints[0]);
 				temp->second.times.push_back( object_pose[4]);
 							
 			}

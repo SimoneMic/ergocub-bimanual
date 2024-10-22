@@ -135,7 +135,15 @@ bool BimanualControl::update_state()
 			
 			if(this->isGrasping)
 			{
+				Eigen::Matrix4d leftToRightMat = this->rightPose.matrix()*this->leftPose.matrix().inverse(); 
+
+
+				this->leftHand2Object = Eigen::Isometry3d(Eigen::Translation3d(this->initObjectRelPose.translation())); //Apply intially recorded grasp constraint
+				
+				this->leftHand2Object.linear() = leftToRightMat.block(0,0,3,3); //Get the actual orientation based on current rel pose of right hand w.r.t left.
+
 				this->objectPose = this->leftPose*this->leftHand2Object;            // Assume object is rigidly attached to left hand
+
 			
 				// G = [    I    0     I    0 ]
 				//     [ S(left) I S(right) I ]
@@ -875,15 +883,20 @@ bool BimanualControl::activate_grasp()
 	{		
 		this->isGrasping = true;                                                            // Set grasp constraint
 		
-		Eigen::VectorXd graspWidth = (this->leftPose.translation() - this->rightPose.translation()); // Distance between the hands
-		
-		this->leftHand2Object = Eigen::Isometry3d(Eigen::Translation3d(graspWidth(0),-graspWidth(1)/2,graspWidth(2))); // Assume object is rigidly attached to left hand
-		
-		this->objectPose = this->leftPose*this->leftHand2Object;                            // Update the object pose
+		Eigen::Matrix4d leftToRightMat = this->rightPose.matrix()*this->leftPose.matrix().inverse(); 
 
-		this->initGraspObjectPose = this->objectPose;										//Pose to reset to to avoid drift.
+		Eigen::Matrix4d leftToObjectMat = leftToRightMat;
+		leftToObjectMat(1,3) = 0.5*leftToRightMat(1,3); 			// modifying it to match the frame on the object
+				
+		this->leftHand2Object.matrix() = leftToObjectMat;
+
+		this->objectPose = this->leftHand2Object*this->leftPose;    // Update the object pose
+
+		this->initObjectRelPose.matrix() = leftToObjectMat;			//Store relative pose to match initial rel pose in the hope that it constrains the grasp
+
+		this->initGraspObjectPose = this->objectPose;				//Pose to reset to to avoid drift.
 		 
-		return move_object(this->objectPose,1.0);                                           // Hold object in current pose
+		return move_object(this->objectPose,1.0);                   // Hold object in current pose
 	}
 }
 
