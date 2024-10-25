@@ -186,14 +186,15 @@ class ControlServer : public ControlInterface
 				std::string reset="reset";
 				temp = graspActionMap->find("custom");
 				CartesianMotion modify_reset = temp2->second;
+				Eigen::Isometry3d init_pose_to_new = this->robot->getInitialGraspObjectPose();
 				reset_custom = temp->second;
-				modify_reset.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
-				modify_reset.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
+				init_pose_to_new.translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
+				init_pose_to_new.rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
 				
 
 				temp->second.waypoints.clear();
 				temp->second.times.clear();
-				temp->second.waypoints.push_back(this->robot->getInitialGraspObjectPose()*modify_reset.waypoints[0]);
+				temp->second.waypoints.push_back(init_pose_to_new);
 				temp->second.times.push_back( object_pose[4]);
 							
 			}
@@ -201,12 +202,7 @@ class ControlServer : public ControlInterface
 			waypointTimes   = temp->second.times;
 			type            = temp->second.type;
 			
-			if(custom_continuous_action)
-			{
-			        temp->second.waypoints.clear();
-			        temp->second.times.clear();
-			        temp->second = reset_custom;
-			}
+
 			
 			if(type == absolute)
 			{
@@ -230,6 +226,13 @@ class ControlServer : public ControlInterface
 					newObjectPoints.push_back(newObjectPoints[i-1]*objectWaypoints[i]); // Transform pose of every subsequent waypoint relative to previous
 				}
 				return this->robot->move_object(newObjectPoints,waypointTimes);
+			}
+			
+			if(custom_continuous_action)
+			{
+			        temp->second.waypoints.clear();
+			        temp->second.times.clear();
+			        temp->second = reset_custom;
 			}
 		}
 

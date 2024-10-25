@@ -140,9 +140,15 @@ bool BimanualControl::update_state()
 
 				this->leftHand2Object = Eigen::Isometry3d(Eigen::Translation3d(this->initObjectRelPose.translation())); //Apply intially recorded grasp constraint
 				
+				//this->leftHand2Object.matrix() = leftToRightMat;
+				
+				//this->leftHand2Object.matrix()(1,3) *= 0.5;
+				
 				this->leftHand2Object.linear() = leftToRightMat.block(0,0,3,3); //Get the actual orientation based on current rel pose of right hand w.r.t left.
 
 				this->objectPose = this->leftPose*this->leftHand2Object;            // Assume object is rigidly attached to left hand
+				
+				std::cout<<"\n Current Object pose Rotation\n" <<this->objectPose.linear().eulerAngles(0,1,2) <<"\n Translation \n"<<this->objectPose.translation();
 
 			
 				// G = [    I    0     I    0 ]
