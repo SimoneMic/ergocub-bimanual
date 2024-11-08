@@ -184,19 +184,12 @@ class ControlServer : public ControlInterface
 			if(custom_continuous_action)
 			{
 				std::string reset="reset";
-				temp = graspActionMap->find("custom");
-				CartesianMotion modify_reset = temp2->second;
+				std::cout<<"\n Sending custom action \n";
 				Eigen::Isometry3d init_pose_to_new = this->robot->getInitialGraspObjectPose();
-				reset_custom = temp->second;
 				init_pose_to_new.translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
 				init_pose_to_new.rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
-				
+				return this->robot->move_object(init_pose_to_new,3.0);
 
-				temp->second.waypoints.clear();
-				temp->second.times.clear();
-				temp->second.waypoints.push_back(init_pose_to_new);
-				temp->second.times.push_back( object_pose[4]);
-							
 			}
 			objectWaypoints = temp->second.waypoints;
 			waypointTimes   = temp->second.times;
@@ -209,9 +202,9 @@ class ControlServer : public ControlInterface
 				if(actionName == "reset")
 				{
 					objectWaypoints.clear();
-					objectWaypoints.push_back(this->robot->getInitialGraspObjectPose());
+					return this->robot->move_object(this->robot->getInitialGraspObjectPose(),waypointTimes[0]);
 				}
-				return this->robot->move_object(objectWaypoints,waypointTimes);
+				
 			}
 			else // type == relative
 			{
@@ -228,12 +221,7 @@ class ControlServer : public ControlInterface
 				return this->robot->move_object(newObjectPoints,waypointTimes);
 			}
 			
-			if(custom_continuous_action)
-			{
-			        temp->second.waypoints.clear();
-			        temp->second.times.clear();
-			        temp->second = reset_custom;
-			}
+
 		}
 
 		/**

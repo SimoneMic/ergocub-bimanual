@@ -285,7 +285,13 @@ class BimanualControl : public QPSolver<double>,
 
 		Eigen::Isometry3d initObjectRelPose;												///< Initial pose of object relative to the left had.
 
+		Eigen::Isometry3d previousObjectPose;													///< Previous pose of the object.
 		
+		bool previousObjectPoseSet = false;
+
+
+
+
 		/**
 		 * Specifies joint control mode, or Cartesian control mode.
 		 */

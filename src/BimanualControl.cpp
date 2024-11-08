@@ -148,7 +148,6 @@ bool BimanualControl::update_state()
 
 				this->objectPose = this->leftPose*this->leftHand2Object;            // Assume object is rigidly attached to left hand
 				
-				std::cout<<"\n Current Object pose Rotation\n" <<this->objectPose.linear().eulerAngles(0,1,2) <<"\n Translation \n"<<this->objectPose.translation();
 
 			
 				// G = [    I    0     I    0 ]
@@ -394,6 +393,7 @@ bool BimanualControl::move_to_poses(const std::vector<Eigen::Isometry3d> &left,
 bool BimanualControl::move_object(const Eigen::Isometry3d &pose,
                                   const double &time)
 {
+	std::cout<<"\n Move Object called";
 	if(not this->isGrasping)
 	{
 		std::cerr << "[ERROR] [BIMANUAL CONTROL] move_object(): "
@@ -411,13 +411,42 @@ bool BimanualControl::move_object(const Eigen::Isometry3d &pose,
 	else
 	{
 		// Insert in to std::vector objects and pass on to spline generator
-		std::vector<Eigen::Isometry3d> poses;
-		poses.push_back(pose);
+		if(!this->previousObjectPoseSet)
+		{
+			this->previousObjectPoseSet = true;
+			this->previousObjectPose = pose;
+
+			std::vector<Eigen::Isometry3d> poses;
+			poses.push_back(pose);
 		
-		std::vector<double> times;
-		times.push_back(time);
+			std::vector<double> times;
+			times.push_back(time);
+			std::cout<<"Setting initial and Previous Object Pose)";
 		
-		return move_object(poses,times);                                                    // Pass onward for spline generation
+		return move_object(poses,times);
+		}
+
+		else 
+		{	std::cout <<"\n New pose given \n"<< pose.translation();
+			Eigen::Matrix<double,6,1> change_in_pose = pose_error(pose,this->previousObjectPose);
+			if(change_in_pose.block(0,0,3,1).norm()>0.02 || change_in_pose.block(3,0,3,1).norm()>0.1)
+			{
+				
+				this->previousObjectPose = pose;
+
+				std::vector<Eigen::Isometry3d> poses;
+				poses.push_back(pose);
+			
+				std::vector<double> times;
+				times.push_back(time);
+			
+				return move_object(poses,times);
+			}
+			else 
+				return true;
+		}
+
+		                                                    // Pass onward for spline generation
 	}
 }
 
@@ -434,15 +463,22 @@ bool BimanualControl::move_object(const std::vector<Eigen::Isometry3d> &poses,
 		          
 		return false;
 	}
-	
+	std::cout<<"Moving object through poses";
 	Eigen::Vector<double,6> leftHandTwist = iDynTree::toEigen(this->computer.getFrameVel("left"));
 	Eigen::Vector3d angularVel = leftHandTwist.tail(3);
 	
 	Eigen::Vector<double,6> objectTwist;
 	objectTwist.head(3) = leftHandTwist.head(3) + angularVel.cross(this->objectPose.translation() - this->leftPose.translation());
 	objectTwist.tail(3) = angularVel;                                  
-	
-	if( isRunning() ) stop();                                                                   // Stop any control threads that are running
+	Eigen::Isometry3d pose;
+	Eigen::Vector<double,6> vel, acc;
+	double elapsedTime = yarp::os::Time::now() - this->startTime;
+	bool manip_in_progress = false;
+	if( isRunning() ){
+		if(this->objectTrajectory.get_state(pose,vel,acc,elapsedTime+0.03))
+			manip_in_progress = true;
+		 stop();
+	}                                                                   // Stop any control threads that are running
 	
 	this->controlSpace = cartesian;                                                             // Ensure that we are running in Cartesian mode
 	
@@ -451,7 +487,11 @@ bool BimanualControl::move_object(const std::vector<Eigen::Isometry3d> &poses,
 	t.insert(t.end(),times.begin(),times.end());                                                // Add on the rest of the times
 	
 	// Set up the waypoints for the object
-	std::vector<Eigen::Isometry3d> waypoints; waypoints.push_back(this->objectPose);            // First waypoint is current pose
+	std::vector<Eigen::Isometry3d> waypoints; 
+	if(manip_in_progress)
+		waypoints.push_back(pose);            // First waypoint is current pose
+	else 
+		waypoints.push_back(this->objectPose);            // First waypoint is current pose
 	waypoints.insert(waypoints.end(),poses.begin(),poses.end());                                // Add on additional waypoints
 	
 	try
@@ -902,7 +942,7 @@ bool BimanualControl::activate_grasp()
 
 		this->initGraspObjectPose = this->objectPose;				//Pose to reset to to avoid drift.
 		 
-		return move_object(this->objectPose,1.0);                   // Hold object in current pose
+		return move_object(this->objectPose,3.0);                   // Hold object in current pose
 	}
 }
 
@@ -914,7 +954,7 @@ bool BimanualControl::release_grasp()
 	if(this->isGrasping)
 	{
 		this->isGrasping = false;
-		
+		this->previousObjectPoseSet = false;
 		return move_to_pose(this->leftPose,this->rightPose,1.0);
 	}
 	else

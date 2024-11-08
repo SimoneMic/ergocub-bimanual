@@ -111,7 +111,10 @@ bool CartesianTrajectory::get_state(Eigen::Isometry3d         &pose,
 {
 	double pos[3];                                                                              // Position vector
 	double rot[3];                                                                              // Angle*axis
-
+	if(spline.size()==0)
+	{
+		return false;
+	}
 	for(int i = 0; i < 3; i++)
 	{
 		pos[i] = this->spline[ i ].evaluatePoint(time, vel[i]  , acc[i]);
