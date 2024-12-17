@@ -184,7 +184,6 @@ class ControlServer : public ControlInterface
 			if(custom_continuous_action)
 			{
 				std::string reset="reset";
-				std::cout<<"\n Sending custom action \n";
 				Eigen::Isometry3d init_pose_to_new = this->robot->getInitialGraspObjectPose();
 				init_pose_to_new.translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
 				init_pose_to_new.rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));

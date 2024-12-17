@@ -393,7 +393,7 @@ bool BimanualControl::move_to_poses(const std::vector<Eigen::Isometry3d> &left,
 bool BimanualControl::move_object(const Eigen::Isometry3d &pose,
                                   const double &time)
 {
-	std::cout<<"\n Move Object called";
+
 	if(not this->isGrasping)
 	{
 		std::cerr << "[ERROR] [BIMANUAL CONTROL] move_object(): "
@@ -421,13 +421,13 @@ bool BimanualControl::move_object(const Eigen::Isometry3d &pose,
 		
 			std::vector<double> times;
 			times.push_back(time);
-			std::cout<<"Setting initial and Previous Object Pose)";
+
 		
 		return move_object(poses,times);
 		}
 
 		else 
-		{	std::cout <<"\n New pose given \n"<< pose.translation();
+		{	
 			Eigen::Matrix<double,6,1> change_in_pose = pose_error(pose,this->previousObjectPose);
 			if(change_in_pose.block(0,0,3,1).norm()>0.02 || change_in_pose.block(3,0,3,1).norm()>0.1)
 			{
@@ -463,7 +463,7 @@ bool BimanualControl::move_object(const std::vector<Eigen::Isometry3d> &poses,
 		          
 		return false;
 	}
-	std::cout<<"Moving object through poses";
+
 	Eigen::Vector<double,6> leftHandTwist = iDynTree::toEigen(this->computer.getFrameVel("left"));
 	Eigen::Vector3d angularVel = leftHandTwist.tail(3);
 	
@@ -650,7 +650,7 @@ bool BimanualControl::threadInit()
 
 		this->startTime = yarp::os::Time::now();                                            // Used to time the control loop
 		
-		this->jointRef = this->jointPos;                                                    // Reference position = current position
+		//this->jointRef = this->jointPos;                                                    // Reference position = current position
 		
 		return true;                                                                        // jumps immediately to run()
 	}
@@ -874,7 +874,7 @@ void BimanualControl::run()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void BimanualControl::threadRelease()
 {
-	this->jointRef = this->jointPos;
+	//this->jointRef = this->jointPos;
 }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
