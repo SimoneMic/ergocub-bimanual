@@ -152,11 +152,11 @@ class ControlServer : public ControlInterface
 				return false;
 			}
 			auto temp = graspActionMap->find(actionName);                               // Temporary placeholder for the iterator
-			auto temp2 = *graspActionMap->find("reset");									//Temporary holde rof the reset pose values.
+			auto temp2 = graspActionMap->find("custom");									//Temporary holde rof the reset pose values.
 
 			bool custom_continuous_action = false;
 			std::vector<double> object_pose;
-
+                        CartesianMotion reset_custom;
 			if(temp == graspActionMap->end())
 			{
 				std::stringstream ss(actionName);
@@ -168,7 +168,7 @@ class ControlServer : public ControlInterface
         				ss.ignore();
 
 				}
-				if(object_pose.size()<=2 && object_pose.size()>=4)
+				if(object_pose.size()<=2 || object_pose.size()>5)
 				{
 					std::cerr << "[ERROR] [CONTROL SERVER} perform_grasp_action(): "
 				          	<< "Could not find the action named '"
@@ -184,21 +184,26 @@ class ControlServer : public ControlInterface
 			if(custom_continuous_action)
 			{
 				std::string reset="reset";
-				temp = graspActionMap->find("custom");
-				temp2.second.waypoints[0].translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
-				temp2.second.waypoints[0].rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
-				temp ->second.waypoints = temp2.second.waypoints;
-				temp ->second.times = temp2.second.times;
-				temp ->second.type = temp2.second.type;
+				Eigen::Isometry3d init_pose_to_new = this->robot->getInitialGraspObjectPose();
+				init_pose_to_new.translate(Eigen::Vector3d(object_pose[0],object_pose[1],object_pose[2]));
+				init_pose_to_new.rotate(Eigen::AngleAxisd(object_pose[3],Eigen::Vector3d::UnitX()));
+				return this->robot->move_object(init_pose_to_new,3.0);
 
 			}
 			objectWaypoints = temp->second.waypoints;
 			waypointTimes   = temp->second.times;
 			type            = temp->second.type;
 			
+
+			
 			if(type == absolute)
 			{
-				return this->robot->move_object(objectWaypoints,waypointTimes);
+				if(actionName == "reset")
+				{
+					objectWaypoints.clear();
+					return this->robot->move_object(this->robot->getInitialGraspObjectPose(),waypointTimes[0]);
+				}
+				
 			}
 			else // type == relative
 			{
@@ -214,6 +219,8 @@ class ControlServer : public ControlInterface
 				}
 				return this->robot->move_object(newObjectPoints,waypointTimes);
 			}
+			
+
 		}
 
 		/**

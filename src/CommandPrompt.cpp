@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 					if (ss.peek() == ',')
 						ss.ignore();
 				}
-				if(object_pose.size() <= 2 && object_pose.size() >= 4)
+				if(object_pose.size() <= 2 || object_pose.size() > 5)
 					output.addString("Cosa");
 				else
 				{
