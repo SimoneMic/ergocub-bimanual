@@ -12,6 +12,8 @@
 #include <Utilities.h>                                                                              // JointTrajectory object structure
 #include <yarp/os/Property.h>                                                                       // Load configuration files
 #include <yarp/os/RpcServer.h>                                                                      // Allows communication over yarp ports
+#include <filesystem>
+#include <cstdlib>
 
 /**
  * A class for parsing control actions for the ergoCub upper body.
@@ -401,25 +403,49 @@ class ControlServer : public ControlInterface
 };                                                                                                  // Semicolon needed after class declaration
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
- //                                            CartesianMotion MAIN                                               //
+ //                                            CartesianMotion MAIN                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
 	std::string errorMessage = "[ERROR] [CONTROL SERVER] ";
+	std::string serverPortName = "/Components/Manipulation"  ;
+	std::string robotPortPrefix = "/ergocub" ;
+	std::string pathToURDF;
+	std::string pathToConfig = "/usr/local/src/robot/hsp/ergocub-bimanual/config/ergocub_real_WALKING_wristless.ini";
 	
-	// Default for argc is 1, but I don't know why ¯\_(ツ)_/¯
 	if(argc != 5)
 	{
-		std::cerr << errorMessage << "Port name, path to URDF, and path to config file are required. "
-		          << "Usage: ./command_server /serverPortName /robotPortName /path/to/model.urdf /path/to/config.ini\n";
+		// Automatically get the path to urdf based on robot name env var
+		const char* env_var = std::getenv("YARP_ROBOT_NAME");
+    	std::string robot_name = (env_var != nullptr) ? env_var : ""; 
+		if (!robot_name.empty()) 
+		{
+        	pathToURDF = "/usr/local/src/robot/robotology-superbuild/src/ergocub-software/urdf/ergoCub/robots/" + robot_name + "/model.urdf";
+			std::cerr << errorMessage << "Server Port name, Robot Port prefix name, path to URDF, and path to config file are required. USING DEFAULT ONES:\n" <<
+				  "serverPortName " << serverPortName << "\n" <<
+				  "robotPortPrefix " << robotPortPrefix << "\n" <<
+				  "pathToURDF " << pathToURDF << "\n" <<
+				  "pathToConfig " << pathToConfig << "\n" <<
+		          "Usage: ./command_server /serverPortName /robotPortName /path/to/model.urdf /path/to/config.ini\n" << std::endl;
+    	}
+		else
+		{
+			std::cerr << errorMessage << " YARP_ROBOT_NAME not set, aborting..."
+			return 1;
+		}
 		
-		return 1;                                                                           // Close with error
+		
 	}
+	else	// Take config from launch arguments
+	{
+		serverPortName  = argv[1];
+		robotPortPrefix = argv[2];
+		pathToURDF      = argv[3];
+		pathToConfig    = argv[4];
+	}
+	
 
-	std::string serverPortName  = argv[1];
-	std::string robotPortPrefix = argv[2];                                                      // Get the port names
-	std::string pathToURDF      = argv[3];                                                      // Get the file path
-	std::string pathToConfig    = argv[4];                                                      // Path to the configuration file
+	
 	
 	// Generate port list prefixes
 	std::vector<std::string> portList;
